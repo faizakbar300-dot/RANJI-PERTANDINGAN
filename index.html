@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>RANJI  PERTANDINGAN KARATE </title>
+<style>
+*{box-sizing:border-box}
+:root{--navy:#082a66;--blue:#1976d2;--red:#e31b23;--green:#087f5b;--bg:#f3f5f7;--line:#aeb8bf}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:#202a32}
+header{background:linear-gradient(135deg,#031b43,#0a4f9e);color:#fff;padding:22px 30px}
+header h1{margin:0;font-size:26px}header p{margin:6px 0 0;opacity:.9}
+main{max-width:1500px;margin:auto;padding:22px}.layout{display:grid;grid-template-columns:350px 1fr;gap:20px}
+.card{background:#fff;border:1px solid #d7dde2;border-radius:14px;padding:18px;margin-bottom:18px;box-shadow:0 5px 20px #0000000d}
+label{display:block;font-weight:700;font-size:13px;margin:12px 0 6px}
+input{width:100%;padding:11px;border:1px solid #bcc6ce;border-radius:8px;font:inherit}
+button{border:0;border-radius:8px;padding:10px 13px;font:inherit;font-weight:700;cursor:pointer}
+.primary{background:var(--navy);color:white}.secondary{background:#e9eef3;color:#17304e}.danger{background:#b00000;color:#fff}.gold{background:#0a4f9e;color:#fff}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+.note,.ok,.warn,.bad{padding:11px;border-radius:6px;font-size:13px;line-height:1.45;margin-top:13px}
+.note{background:#edf5ff;border-left:4px solid var(--blue)}
+.ok{background:#edf8f3;border-left:4px solid var(--green)}
+.warn{background:#fff8e6;border-left:4px solid #e1a600}
+.bad{background:#fff0f0;border-left:4px solid var(--red)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:15px}
+.stat{background:#f0f4f7;padding:10px;border-radius:9px;text-align:center}.stat b{display:block;font-size:22px;color:var(--navy)}
+.wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #e1e5e8;text-align:left;font-size:13px}th{background:#f2f5f7}
+.category{margin-top:25px}.cat-title{background:var(--navy);color:#fff;padding:10px 14px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+.cat-title small{font-weight:normal;opacity:.9}
+.bracket-scroll{overflow:auto;padding:10px 0 25px}
+.bracket{display:flex;gap:46px;min-width:max-content;align-items:stretch;padding:5px}
+.round{width:260px;display:flex;flex-direction:column}.round-title{text-align:center;background:#edf1f4;padding:8px;border-radius:5px;font-weight:800;margin-bottom:4px}
+.mcell{flex:1;display:flex;flex-direction:column;justify-content:center;padding:10px 0;position:relative} .bye-auto{visibility:hidden;}
+.match{border:1px solid #89939a;background:#fff;position:relative;z-index:1}
+/* garis penghubung antar pertandingan */
+.mcell.has-next::after{content:"";position:absolute;top:50%;right:-23px;width:23px;border-top:2px solid #6b7780}
+.mcell.has-prev::before{content:"";position:absolute;top:50%;left:-23px;width:23px;border-top:2px solid #6b7780}
+.mcell.join-down .vline{position:absolute;right:-24px;top:50%;height:100%;border-right:2px solid #6b7780}.match-head{font-size:9px;color:#69747c;padding:4px 7px;border-bottom:1px solid #d8dde1}
+.slot{height:34px;padding:4px 7px;border-bottom:1px solid #bfc6cb;display:flex;align-items:center;gap:5px;font-size:11px}.slot:last-child{border-bottom:0}
+.slot.red{border-left:7px solid var(--red)}.slot.blue{border-left:7px solid var(--blue)}.slot.bye{color:#999;background:#fafafa}
+.name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:145px}.dojo{margin-left:auto;font-size:9px;color:#69747c;max-width:85px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty{text-align:center;padding:35px;color:#6d7780}.print-title{display:none}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+@media print{
+ body{background:#fff}header,.left,.no-print{display:none!important}main{max-width:none;padding:0}.card{border:0;box-shadow:none;padding:0}.print-title{display:block}.bracket-scroll{overflow:visible}.category{page-break-inside:avoid}.print-title,.ok,.bad,.footer-note{display:none!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ @page{size:A4 landscape;margin:10mm}
+ .layout{display:block}.stats,#participantList,.empty,.cat-title small{display:none!important}
+ .category{margin:0;break-after:page;page-break-after:always}.category:last-child{break-after:auto;page-break-after:auto}
+ .match{border-color:#89939a!important}.bracket-scroll{padding:0}
+}
+
+.gender-section{margin:18px 0;border:1px solid #dce2e7;border-radius:12px;overflow:hidden;background:#fff}
+.gender-header{padding:12px 16px;color:#fff;font-size:17px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+.gender-header.putra{background:linear-gradient(135deg,#0b4f9c,#1976d2)}
+.gender-header.putri{background:linear-gradient(135deg,#8b2c67,#d14a8b)}
+.category-block{padding:12px 15px;border-top:1px solid #e4e8eb}
+.category-name{font-weight:800;font-size:14px;margin-bottom:8px;color:#24313b}
+.category-count{font-size:11px;color:#66737d;font-weight:normal}
+.participant-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.participant-card{border:1px solid #dfe5e9;border-radius:8px;padding:9px 10px;background:#fafcfd;display:flex;align-items:center;gap:8px}
+.participant-number{min-width:25px;height:25px;border-radius:50%;background:#e9eef3;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+.participant-info{min-width:0}.participant-info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.participant-info small{color:#6a757d;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+</head>
+<body>
+<header>
+<h1>🥋RANJI KARATE</h1>
+<p>Sistem Ranji Pertandingan Karate </p>
+</header>
+<main>
+<div class="layout">
+<section class="left">
+<div class="card">
+<h3>Upload Excel (Nama &amp; Dojo)</h3>
+<div class="note" style="margin-top:0">Siapkan file <b>.xlsx / .xls / .csv</b> dengan kolom <b>Nama</b> dan <b>Dojo</b>. Setelah diunggah, dojo dipakai otomatis di kartu <b>Tambah Banyak Peserta Sekaligus</b>. Atau pilih kategori di bawah lalu tambahkan semua peserta di file langsung ke daftar.</div>
+<label>File Excel</label>
+<input type="file" id="fileExcel" accept=".xlsx,.xls,.csv">
+<div id="excelInfo"></div>
+<label>Kategori / Kelas (untuk semua peserta di file)</label>
+<select id="kategoriExcel"></select>
+<div class="actions">
+<button class="primary" onclick="addExcelToCategory()">+ Tambahkan Semua ke Daftar</button>
+<button class="secondary" onclick="downloadTemplate()">⬇ Template Excel</button>
+</div>
+</div>
+
+<div class="card">
+<h3>Tambah Banyak Peserta Sekaligus</h3>
+<div class="note" style="margin-top:0">Gunakan ini kalau beberapa peserta ada di <b>kategori/kelas yang sama</b>. Tulis satu nama per baris. Dojo diambil otomatis dari data Excel yang sudah diunggah. Kalau mau menulis dojo manual, pakai format: <b>Nama | Nama Dojo</b> di baris itu.</div>
+<label>Kategori / Kelas (untuk semua nama di bawah)</label>
+<select id="kategoriBanyak"><option value="">-- Pilih Kategori / Kelas --</option><optgroup label="KUMITE"><option value="Pra Usia Dini - Putra -25kg">Pra Usia Dini - Putra -25kg</option><option value="Pra Usia Dini - Putra +25kg">Pra Usia Dini - Putra +25kg</option><option value="Pra Usia Dini - Putri -20kg">Pra Usia Dini - Putri -20kg</option><option value="Pra Usia Dini - Putri +20kg">Pra Usia Dini - Putri +20kg</option><option value="Usia Dini - Putra -30kg">Usia Dini - Putra -30kg</option><option value="Usia Dini - Putra +30kg">Usia Dini - Putra +30kg</option><option value="Usia Dini - Putri -25kg">Usia Dini - Putri -25kg</option><option value="Usia Dini - Putri +25kg">Usia Dini - Putri +25kg</option><option value="Pra Pemula - Putra -35kg">Pra Pemula - Putra -35kg</option><option value="Pra Pemula - Putra +35kg">Pra Pemula - Putra +35kg</option><option value="Pra Pemula - Putri -30kg">Pra Pemula - Putri -30kg</option><option value="Pra Pemula - Putri +30kg">Pra Pemula - Putri +30kg</option><option value="Pemula - Putra -40kg">Pemula - Putra -40kg</option><option value="Pemula - Putra -45kg">Pemula - Putra -45kg</option><option value="Pemula - Putra -50kg">Pemula - Putra -50kg</option><option value="Pemula - Putra +50kg">Pemula - Putra +50kg</option><option value="Pemula - Putri -42kg">Pemula - Putri -42kg</option><option value="Pemula - Putri -47kg">Pemula - Putri -47kg</option><option value="Pemula - Putri -52kg">Pemula - Putri -52kg</option><option value="Pemula - Putri +52kg">Pemula - Putri +52kg</option><option value="Cadet - Putra -52kg">Cadet - Putra -52kg</option><option value="Cadet - Putra -57kg">Cadet - Putra -57kg</option><option value="Cadet - Putra -63kg">Cadet - Putra -63kg</option><option value="Cadet - Putra +63kg">Cadet - Putra +63kg</option><option value="Cadet - Putri -47kg">Cadet - Putri -47kg</option><option value="Cadet - Putri -54kg">Cadet - Putri -54kg</option><option value="Cadet - Putri -61kg">Cadet - Putri -61kg</option><option value="Cadet - Putri +61kg">Cadet - Putri +61kg</option><option value="Junior - Putra -55kg">Junior - Putra -55kg</option><option value="Junior - Putra -61kg">Junior - Putra -61kg</option><option value="Junior - Putra -68kg">Junior - Putra -68kg</option><option value="Junior - Putra +68kg">Junior - Putra +68kg</option><option value="Junior - Putri -48kg">Junior - Putri -48kg</option><option value="Junior - Putri -53kg">Junior - Putri -53kg</option><option value="Junior - Putri -59kg">Junior - Putri -59kg</option><option value="Junior - Putri +59kg">Junior - Putri +59kg</option></optgroup><optgroup label="KATA"><option value="Kata - Pra Usia Dini - Putra">Kata - Pra Usia Dini - Putra</option><option value="Kata - Pra Usia Dini - Putri">Kata - Pra Usia Dini - Putri</option><option value="Kata - Usia Dini - Putra">Kata - Usia Dini - Putra</option><option value="Kata - Usia Dini - Putri">Kata - Usia Dini - Putri</option><option value="Kata - Pra Pemula - Putra">Kata - Pra Pemula - Putra</option><option value="Kata - Pra Pemula - Putri">Kata - Pra Pemula - Putri</option><option value="Kata - Pemula - Putra">Kata - Pemula - Putra</option><option value="Kata - Pemula - Putri">Kata - Pemula - Putri</option><option value="Kata - Cadet - Putra">Kata - Cadet - Putra</option><option value="Kata - Cadet - Putri">Kata - Cadet - Putri</option><option value="Kata - Junior - Putra">Kata - Junior - Putra</option><option value="Kata - Junior - Putri">Kata - Junior - Putri</option></optgroup></select>
+<label>Daftar Nama (satu per baris)</label>
+<textarea id="namaBanyak" rows="6" placeholder="Tulis nama peserta di sini, satu nama per baris" style="width:100%;padding:11px;border:1px solid #bcc6ce;border-radius:8px;font:inherit;resize:vertical"></textarea>
+<div class="actions">
+<button class="primary" onclick="addBulkParticipants()">+ Tambah Semua ke Daftar</button>
+</div>
+</div>
+
+<div class="card">
+<h3>Pengaturan</h3>
+<div class="actions">
+<button class="primary" onclick="generateAll()">🎲 Acak & Buat Ranji</button>
+<button class="gold" onclick="printRanji()">🖨️ Cetak Ranji</button>
+<button class="danger" onclick="clearAll()">Hapus Semua</button>
+</div>
+<div class="note">Jika jumlah peserta dari satu dojo terlalu banyak sehingga pemisahan sempurna tidak mungkin, sistem tetap mengacak dan memilih susunan dengan konflik dojo paling sedikit, lalu memberi peringatan.</div>
+</div>
+</section>
+
+<section>
+<div class="card no-print">
+<div class="stats">
+<div class="stat"><b id="total">0</b>Peserta</div>
+<div class="stat"><b id="catCount">0</b>Kategori</div>
+<div class="stat"><b id="dojoCount">0</b>Dojo</div>
+</div>
+<h2>Daftar Peserta</h2>
+<div id="participantList"></div>
+</div>
+
+<div class="card">
+<div class="print-title"><h1>RANJI PERTANDINGAN KARATE</h1><p>Hasil pengacakan ranji pertandingan</p></div>
+<h2 class="no-print">Ranji Pertandingan</h2>
+<div id="bracketArea"><div class="empty">Masukkan peserta, kemudian klik <b>Acak & Buat Ranji</b>.</div></div>
+</div>
+</section>
+</div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+let participants=[];
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+function save(){renderList();}
+function addBulkParticipants(){
+  const kategori=document.getElementById("kategoriBanyak").value.trim();
+  const raw=document.getElementById("namaBanyak").value;
+
+  if(!kategori){
+    alert("Pilih Kategori / Kelas untuk daftar nama ini terlebih dahulu.");
+    return;
+  }
+
+  const lines=raw.split("\n").map(l=>l.trim()).filter(l=>l.length>0);
+  if(!lines.length){
+    alert("Tulis minimal satu nama, satu nama per baris.");
+    return;
+  }
+
+  let ditambah=0, tanpaDojo=0;
+  lines.forEach(line=>{
+    let nama=line, dojo=lookupDojo(line);
+    if(line.includes("|")){
+      const parts=line.split("|");
+      nama=parts[0].trim();
+      dojo=(parts[1]||"").trim()||lookupDojo(nama);
+    }
+    if(!nama)return;
+    if(!dojo){tanpaDojo++;}
+    participants.push({id:Date.now()+Math.random(),nama:nama,kategori:kategori,dojo:dojo});
+    ditambah++;
+  });
+
+  renderList();
+  document.getElementById("namaBanyak").value="";
+  document.getElementById("kategoriBanyak").selectedIndex=0;
+  document.getElementById("bracketArea").innerHTML=
+    '<div class="empty">'+ditambah+' peserta berhasil ditambahkan. Klik <b>Acak & Buat Ranji</b> untuk membuat ranji terbaru.</div>';
+
+  if(tanpaDojo>0){
+    alert(ditambah+" peserta ditambahkan, tapi "+tanpaDojo+" di antaranya belum ada nama dojo (nama tidak ditemukan di data Excel, atau tulis dojo per baris pakai format Nama | Dojo).");
+  }
+}
+
+/* ===== Data Excel (Nama & Dojo) ===== */
+let dojoDB=new Map(), excelRows=[];
+document.getElementById("kategoriExcel").innerHTML=document.getElementById("kategoriBanyak").innerHTML;
+function normName(s){return String(s||"").toLowerCase().replace(/\s+/g," ").trim();}
+function lookupDojo(nama){const r=dojoDB.get(normName(nama));return r?r.dojo:"";}
+function parseCSV(text){
+ const first=text.split(/\r?\n/)[0]||"",delim=(first.split(";").length>first.split(",").length)?";":",";
+ const rows=[];let row=[],cur="",q=false;
+ for(let i=0;i<text.length;i++){
+  const c=text[i];
+  if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}
+  else if(c==='"')q=true;
+  else if(c===delim){row.push(cur);cur="";}
+  else if(c==="\n"||c==="\r"){if(c==="\r"&&text[i+1]==="\n")i++;row.push(cur);rows.push(row);row=[];cur="";}
+  else cur+=c;
+ }
+ if(cur!==""||row.length){row.push(cur);rows.push(row);}
+ return rows;
+}
+function readRowsFromFile(file,cb){
+ const reader=new FileReader();
+ reader.onerror=()=>alert("File tidak dapat dibaca.");
+ if(/\.csv$/i.test(file.name)){
+  reader.onload=e=>cb(parseCSV(String(e.target.result).replace(/^\uFEFF/,"")));
+  reader.readAsText(file);
+ }else{
+  if(typeof XLSX==="undefined"){alert("Library Excel belum termuat (perlu internet saat halaman dibuka). Sambungkan internet atau simpan file sebagai .csv.");return;}
+  reader.onload=e=>{
+   try{const wb=XLSX.read(e.target.result,{type:"array"});cb(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:""}));}
+   catch(err){alert("Gagal membaca file Excel.");}
+  };
+  reader.readAsArrayBuffer(file);
+ }
+}
+function extractNamaDojo(rows){
+ rows=rows.filter(r=>r.some(c=>String(c).trim()!==""));
+ if(!rows.length)return [];
+ let ni=0,di=1,start=0;
+ const head=rows[0].map(c=>String(c).toLowerCase()),n=head.findIndex(c=>c.includes("nama")),d=head.findIndex(c=>c.includes("dojo"));
+ if(n>-1||d>-1){ni=n>-1?n:(d===0?1:0);di=d>-1?d:(ni===0?1:0);start=1;}
+ return rows.slice(start).map(r=>({nama:String(r[ni]||"").trim(),dojo:String(r[di]||"").trim()})).filter(r=>r.nama);
+}
+document.getElementById("fileExcel").addEventListener("change",function(){
+ const f=this.files[0];if(!f)return;
+ readRowsFromFile(f,rows=>{
+  excelRows=extractNamaDojo(rows);
+  excelRows.forEach(r=>dojoDB.set(normName(r.nama),r));
+  
+  const info=document.getElementById("excelInfo");
+  if(!excelRows.length){info.className="bad";info.innerHTML="Tidak ada data terbaca. Pastikan kolom Nama dan Dojo terisi.";}
+  else{info.className="ok";info.innerHTML='✓ <b>'+excelRows.length+'</b> baris terbaca dari <b>'+esc(f.name)+'</b>. Dojo akan terisi otomatis di "Tambah Banyak Peserta Sekaligus".';}
+ });
+ this.value="";
+});
+function addExcelToCategory(){
+ const kategori=document.getElementById("kategoriExcel").value.trim();
+ if(!excelRows.length){alert("Upload file Excel yang berisi Nama dan Dojo terlebih dahulu.");return;}
+ if(!kategori){alert("Pilih Kategori / Kelas untuk peserta dari file Excel ini.");return;}
+ const n=excelRows.length;
+ excelRows.forEach(r=>participants.push({id:Date.now()+Math.random(),nama:r.nama,kategori:kategori,dojo:r.dojo}));
+ excelRows=[];
+ const info=document.getElementById("excelInfo");info.className="";info.innerHTML="";
+ document.getElementById("kategoriExcel").selectedIndex=0;
+ renderList();
+ document.getElementById("bracketArea").innerHTML='<div class="empty">'+n+' peserta dari Excel berhasil ditambahkan. Klik <b>Acak & Buat Ranji</b> untuk membuat ranji terbaru.</div>';
+}
+function downloadTemplate(){
+ if(typeof XLSX==="undefined"){alert("Library Excel belum termuat (perlu internet).");return;}
+ const ws=XLSX.utils.aoa_to_sheet([["Nama","Dojo"],["Contoh Nama Peserta","Contoh Nama Dojo"]]);
+ ws["!cols"]=[{wch:30},{wch:30}];
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Peserta");
+ XLSX.writeFile(wb,"template_peserta.xlsx");
+}
+
+function removeParticipant(id){participants=participants.filter(p=>p.id!==id);save();}
+function clearAll(){
+ if(!participants.length)return;
+ if(confirm("Hapus semua data peserta?")){participants=[];renderList();document.getElementById("bracketArea").innerHTML='<div class="empty">Masukkan peserta, kemudian klik <b>Acak & Buat Ranji</b>.</div>';}
+}
+function renderList(){
+ document.getElementById("total").textContent=participants.length;
+ document.getElementById("catCount").textContent=new Set(participants.map(p=>p.kategori.trim().toLowerCase())).size;
+ document.getElementById("dojoCount").textContent=new Set(participants.map(p=>p.dojo.trim().toLowerCase()).filter(Boolean)).size;
+ const el=document.getElementById("participantList");
+ if(!participants.length){el.innerHTML='<div class="empty">Belum ada peserta. Tambahkan peserta terlebih dahulu.</div>';return;}
+
+ const putra=new Map(), putri=new Map(), lainnya=new Map();
+ participants.forEach(p=>{
+   const key=p.kategori.trim();
+   const lower=key.toLowerCase();
+   const target=lower.includes('putra')?putra:(lower.includes('putri')?putri:lainnya);
+   if(!target.has(key))target.set(key,[]);
+   target.get(key).push(p);
+ });
+
+ let nomor=0;
+ const makeSection=(title,cls,map)=>{
+   if(!map.size)return '';
+   let out='<div class="gender-section"><div class="gender-header '+cls+'"><span>'+title+'</span><span>'+Array.from(map.values()).reduce((a,v)=>a+v.length,0)+' peserta</span></div>';
+   map.forEach((arr,category)=>{
+     out+='<div class="category-block"><div class="category-name">'+esc(category)+' <span class="category-count">('+arr.length+' peserta)</span></div><div class="participant-chips">';
+     arr.forEach(p=>{
+       nomor++;
+       out+='<div class="participant-card"><span class="participant-number">'+nomor+'</span><div class="participant-info"><b>'+esc(p.nama)+'</b><small>Dojo: '+esc(p.dojo||'-')+'</small></div><button class="danger no-print" style="margin-left:auto;padding:6px 8px;font-size:11px" onclick="removeParticipant('+p.id+')">Hapus</button></div>';
+     });
+     out+='</div></div>';
+   });
+   return out+'</div>';
+ };
+ el.innerHTML=makeSection('👨 PUTRA','putra',putra)+makeSection('👩 PUTRI','putri',putri)+makeSection('LAINNYA','putra',lainnya);
+}
+function shuffle(a){
+ const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]];}return x;
+}
+function nextPower(n){let x=1;while(x<n)x*=2;return x;}
+function sameDojo(a,b){return a&&b&&a.dojo.trim()!==""&&a.dojo.trim().toLowerCase()===b.dojo.trim().toLowerCase();}
+function conflictScore(arr){
+ let s=0;
+ for(let i=0;i<arr.length;i+=2){if(sameDojo(arr[i],arr[i+1]))s++;}
+ return s;
+}
+/* Randomisasi: mencoba ribuan susunan dan mengambil susunan acak terbaik
+   berdasarkan jumlah pasangan dojo sama di babak pertama. */
+function createFirstRound(players){
+ const size=nextPower(players.length);
+ let base=[...players];while(base.length<size)base.push(null);
+ let best=null,bestScore=Infinity;
+ for(let attempt=0;attempt<10000;attempt++){
+   const trial=shuffle(base),score=conflictScore(trial);
+   let doubleBye=0;for(let i=0;i<trial.length;i+=2)if(!trial[i]&&!trial[i+1])doubleBye++;
+   const total=score+doubleBye*1000;
+   if(total<bestScore){best=trial;bestScore=total;if(total===0)break;}
+ }
+ return {slots:best,conflicts:conflictScore(best)};
+}
+
+const CATEGORY_ORDER = [
+"Pra Usia Dini - Putra -25kg","Pra Usia Dini - Putra +25kg",
+"Pra Usia Dini - Putri -20kg","Pra Usia Dini - Putri +20kg",
+"Usia Dini - Putra -30kg","Usia Dini - Putra +30kg",
+"Usia Dini - Putri -25kg","Usia Dini - Putri +25kg",
+"Pra Pemula - Putra -35kg","Pra Pemula - Putra +35kg",
+"Pra Pemula - Putri -30kg","Pra Pemula - Putri +30kg",
+"Pemula - Putra -40kg","Pemula - Putra -45kg","Pemula - Putra -50kg","Pemula - Putra +50kg",
+"Pemula - Putri -42kg","Pemula - Putri -47kg","Pemula - Putri -52kg","Pemula - Putri +52kg",
+"Cadet - Putra -52kg","Cadet - Putra -57kg","Cadet - Putra -63kg","Cadet - Putra +63kg",
+"Cadet - Putri -47kg","Cadet - Putri -54kg","Cadet - Putri -61kg","Cadet - Putri +61kg",
+"Junior - Putra -55kg","Junior - Putra -61kg","Junior - Putra -68kg","Junior - Putra +68kg",
+"Junior - Putri -48kg","Junior - Putri -53kg","Junior - Putri -59kg","Junior - Putri +59kg",
+"Kata - Pra Usia Dini - Putra",
+"Kata - Pra Usia Dini - Putri",
+"Kata - Usia Dini - Putra",
+"Kata - Usia Dini - Putri",
+"Kata - Pra Pemula - Putra",
+"Kata - Pra Pemula - Putri",
+"Kata - Pemula - Putra",
+"Kata - Pemula - Putri",
+"Kata - Cadet - Putra",
+"Kata - Cadet - Putri",
+"Kata - Junior - Putra",
+"Kata - Junior - Putri"
+];
+
+function groupByCategory(){
+ const raw=new Map();
+ participants.forEach(p=>{const key=p.kategori.trim();if(!raw.has(key))raw.set(key,[]);raw.get(key).push(p);});
+ const map=new Map();
+ CATEGORY_ORDER.forEach(key=>{if(raw.has(key))map.set(key,raw.get(key));});
+ raw.forEach((value,key)=>{if(!map.has(key))map.set(key,value);});
+ return map;
+}
+function slotHTML(p,color){
+ if(!p)return '<div class="slot bye"><span>BYE — Lolos otomatis</span></div>';
+ return '<div class="slot '+color+'"><span class="name">'+esc(p.nama)+'</span><span class="dojo">'+esc(p.dojo||'')+'</span></div>';
+}
+function roundLabel(count){
+ if(count===2)return "FINAL";
+ if(count===4)return "SEMIFINAL";
+ if(count===8)return "PEREMPAT FINAL";
+ if(count===16)return "BABAK 16 BESAR";
+ return "BABAK "+count+" PESERTA";
+}
+function renderBracket(firstSlots){
+ let html='<div class="bracket-scroll"><div class="bracket">';
+ let current=firstSlots,round=1;
+ while(current.length>=2){
+   const matches=current.length/2;
+   const nextRound=[];
+   html+='<div class="round">';
+   for(let i=0;i<matches;i++){
+     const a=current[i*2],b=current[i*2+1];
+     const autoAdvance=(!a&&b)||(a&&!b);
+     const isLast=current.length===2;
+     const cc='mcell'+(isLast?'':' has-next')+(round>1?' has-prev':'')+((!isLast&&i%2===0)?' join-down':'');
+
+     if(autoAdvance){
+       // BYE: kotak pertandingan tetap ditampilkan.
+       // Nama peserta yang mendapat BYE disembunyikan di babak awal,
+       // lalu langsung ditampilkan pada babak berikutnya.
+       const survivor=a||b;
+       nextRound.push(survivor);
+       html+='<div class="'+cc+'">'+((!isLast&&i%2===0)?'<span class="vline"></span>':'');
+       html+='<div class="match"><div class="match-head">PERTANDINGAN '+(i+1)+'</div>';
+       if(a&&!b){
+         html+='<div class="slot red"><span class="name"></span><span class="dojo"></span></div>';
+         html+='<div class="slot bye"><span>BYE — Lolos otomatis</span></div>';
+       }else{
+         html+='<div class="slot bye"><span>BYE — Lolos otomatis</span></div>';
+         html+='<div class="slot blue"><span class="name"></span><span class="dojo"></span></div>';
+       }
+       html+='</div></div>';
+       continue;
+     }
+
+     let cls=sameDojo(a,b)?' style="border-color:#e31b23"':"";
+     html+='<div class="'+cc+'">'+((!isLast&&i%2===0)?'<span class="vline"></span>':'');
+     html+='<div class="match"'+cls+'><div class="match-head">PERTANDINGAN '+(i+1)+'</div>';
+
+     if(!a&&!b){
+       html+='<div class="slot bye"><span>BYE — tidak ada peserta</span></div>';
+       html+='<div class="slot bye"><span>BYE — tidak ada peserta</span></div>';
+       nextRound.push(null);
+     }else{
+       html+=slotHTML(a,"red");
+       html+=slotHTML(b,"blue");
+       // Pertandingan normal belum mempunyai pemenang.
+       nextRound.push({nama:"",dojo:""});
+     }
+     html+='</div></div>';
+   }
+   html+='</div>';
+   if(current.length===2)break;
+   // Hasil BYE langsung menjadi peserta babak berikutnya.
+   current=nextRound;
+   round++;
+ }
+ html+='</div></div>';
+ return html;
+}
+function generateAll(){
+ if(!participants.length){alert("Belum ada peserta.");return;}
+ const area=document.getElementById("bracketArea");area.innerHTML="";
+ let map=groupByCategory(),number=0;
+ map.forEach((players,category)=>{
+   number++;
+   const result=createFirstRound(players);
+   const conflict=result.conflicts;
+   let html='<div class="category"><div class="cat-title"><span>'+esc(category)+'</span><small>'+players.length+' peserta</small></div>';
+   if(conflict===0){
+     html+='<div class="ok">✓ <b>Babak pertama aman:</b> tidak ada peserta dari dojo yang sama yang dipertemukan langsung.</div>';
+   }else{
+     html+='<div class="bad">⚠ <b>Perhatian:</b> masih ada '+conflict+' pasangan dojo yang sama. Hal ini hanya terjadi jika jumlah peserta dari satu dojo membuat pemisahan sempurna secara matematis tidak memungkinkan.</div>';
+   }
+   html+=renderBracket(result.slots);
+   html+='<div class="footer-note">Warna merah/biru menandai sisi peserta. BYE berarti lolos otomatis ke ronde berikutnya.</div></div>';
+   area.innerHTML+=html;
+ });
+}
+/* ===== Cetak ranji: skala otomatis agar bagan muat di kertas ===== */
+function fitBracketsForPrint(){
+ document.querySelectorAll('.bracket').forEach(b=>{
+  b.style.zoom='';
+  const w=b.scrollWidth,h=b.scrollHeight;
+  const scW=Math.min(1,1000/w),scH=640/h;
+  const sc=Math.min(scW,Math.max(scH,0.5));
+  if(sc<1)b.style.zoom=sc;
+ });
+}
+function resetBracketZoom(){document.querySelectorAll('.bracket').forEach(b=>b.style.zoom='');}
+window.addEventListener('beforeprint',fitBracketsForPrint);
+window.addEventListener('afterprint',resetBracketZoom);
+function printRanji(){
+ if(!document.querySelector('#bracketArea .bracket')){alert("Ranji belum dibuat. Klik \"Acak & Buat Ranji\" terlebih dahulu.");return;}
+ fitBracketsForPrint();
+ window.print();
+}
+renderList();
+</script>
+
+</body>
+</html>

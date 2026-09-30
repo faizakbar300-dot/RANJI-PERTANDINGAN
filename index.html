@@ -62,16 +62,68 @@ button{border:0;border-radius:8px;padding:10px 13px;font:inherit;font-weight:700
 .participant-card{border:1px solid #dfe5e9;border-radius:8px;padding:9px 10px;background:#fafcfd;display:flex;align-items:center;gap:8px}
 .participant-number{min-width:25px;height:25px;border-radius:50%;background:#e9eef3;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
 .participant-info{min-width:0}.participant-info b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.participant-info small{color:#6a757d;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ===== Login & peran pengguna ===== */
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+#userbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}
+#userbar button{padding:7px 12px}
+.badge{padding:4px 10px;border-radius:99px;font-size:12px;font-weight:800}
+.badge.admin{background:#ffd54a;color:#4a3600}.badge.viewer{background:#dbe9ff;color:#0a3a78}
+#authScreen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#031b43,#0a4f9e)}
+body.loggedout #authScreen{display:flex}
+body.loggedout header,body.loggedout main{display:none}
+body.checking .auth-box{visibility:hidden}
+.auth-box{background:#fff;border-radius:16px;padding:30px 28px;width:100%;max-width:400px;box-shadow:0 20px 60px #0006}
+.auth-brand{text-align:center;margin-bottom:8px}
+.auth-brand .logo{font-size:40px;line-height:1}
+.auth-brand h1{margin:8px 0 4px;font-size:22px;color:var(--navy)}
+.auth-brand p{margin:0;font-size:13px;color:#5b6771}
+.auth-box button[type=submit]{width:100%;margin-top:18px;padding:12px}
+.auth-switch{text-align:center;font-size:13px;margin:16px 0 0}
+.auth-switch a{color:var(--blue);font-weight:700;text-decoration:none}
+.auth-switch a:hover{text-decoration:underline}
+.auth-hint{font-size:12px;color:#6a757d;text-align:center;margin:12px 0 0}
+.auth-box .bad,.auth-box .ok{margin-top:14px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid #1976d266;outline-offset:1px}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.card-head h2{margin:0}
+body.viewer .admin-only{display:none!important}
+body.viewer .layout{grid-template-columns:1fr}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#082a66;color:#fff;padding:11px 18px;border-radius:8px;font-size:14px;box-shadow:0 8px 24px #0004;z-index:99;display:none;max-width:90vw}
+@media print{#userbar,#toast,#authScreen{display:none!important}}
 </style>
 </head>
-<body>
+<body class="loggedout checking">
+
+<div id="authScreen">
+ <div class="auth-box">
+  <div class="auth-brand"><div class="logo">🥋</div><h1>RANJI KARATE</h1><p id="authSubtitle">Masuk untuk melihat ranji pertandingan</p></div>
+  <form id="authForm" novalidate>
+   <label for="authEmail">Email</label>
+   <input type="email" id="authEmail" autocomplete="email" placeholder="nama@email.com" required>
+   <label for="authPass">Kata sandi</label>
+   <input type="password" id="authPass" autocomplete="current-password" placeholder="Kata sandi" required>
+   <div id="confirmWrap" hidden>
+    <label for="authPass2">Ulangi kata sandi</label>
+    <input type="password" id="authPass2" autocomplete="new-password" placeholder="Ulangi kata sandi">
+   </div>
+   <div id="authMsg" class="bad" hidden></div>
+   <button class="primary" id="authSubmit" type="submit">Masuk</button>
+  </form>
+  <p class="auth-switch"><span id="switchText">Belum punya akun?</span> <a href="#" id="switchLink">Daftar</a></p>
+  <p class="auth-hint">Admin masuk dengan email dan kata sandi admin pada form yang sama.</p>
+ </div>
+</div>
+<div id="toast"></div>
+
 <header>
-<h1>🥋RANJI KARATE</h1>
-<p>Sistem Ranji Pertandingan Karate </p>
+<div><h1>🥋RANJI KARATE</h1>
+<p>Sistem Ranji Pertandingan Karate </p></div>
+<div id="userbar" class="no-print"><span id="userEmail"></span><span id="roleBadge" class="badge"></span><button class="secondary" onclick="FB.logout()">Keluar</button></div>
 </header>
 <main>
 <div class="layout">
-<section class="left">
+<section class="left admin-only">
 <div class="card">
 <h3>Upload Excel (Nama &amp; Dojo)</h3>
 <div class="note" style="margin-top:0">Siapkan file <b>.xlsx / .xls / .csv</b> dengan kolom <b>Nama</b> dan <b>Dojo</b>. Setelah diunggah, dojo dipakai otomatis di kartu <b>Tambah Banyak Peserta Sekaligus</b>. Atau pilih kategori di bawah lalu tambahkan semua peserta di file langsung ke daftar.</div>
@@ -102,7 +154,6 @@ button{border:0;border-radius:8px;padding:10px 13px;font:inherit;font-weight:700
 <h3>Pengaturan</h3>
 <div class="actions">
 <button class="primary" onclick="generateAll()">🎲 Acak & Buat Ranji</button>
-<button class="gold" onclick="printRanji()">🖨️ Cetak Ranji</button>
 <button class="danger" onclick="clearAll()">Hapus Semua</button>
 </div>
 <div class="note">Jika jumlah peserta dari satu dojo terlalu banyak sehingga pemisahan sempurna tidak mungkin, sistem tetap mengacak dan memilih susunan dengan konflik dojo paling sedikit, lalu memberi peringatan.</div>
@@ -122,8 +173,8 @@ button{border:0;border-radius:8px;padding:10px 13px;font:inherit;font-weight:700
 
 <div class="card">
 <div class="print-title"><h1>RANJI PERTANDINGAN KARATE</h1><p>Hasil pengacakan ranji pertandingan</p></div>
-<h2 class="no-print">Ranji Pertandingan</h2>
-<div id="bracketArea"><div class="empty">Masukkan peserta, kemudian klik <b>Acak & Buat Ranji</b>.</div></div>
+<div class="card-head no-print"><h2>Ranji Pertandingan</h2><button class="gold" onclick="printRanji()">🖨️ Cetak Ranji</button></div>
+<div id="bracketArea"><div class="empty">Memuat data…</div></div>
 </div>
 </section>
 </div>
@@ -135,44 +186,38 @@ let participants=[];
 
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
 function save(){renderList();}
-function addBulkParticipants(){
+function isAdmin(){return window.IS_ADMIN===true;}
+function guard(){if(!isAdmin()){alert("Hanya admin yang dapat mengubah data.");return false;}return true;}
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.style.display="block";clearTimeout(toast._t);toast._t=setTimeout(()=>t.style.display="none",3500);}
+function dataError(e){
+  console.error(e);
+  if(e&&e.code==="permission-denied")alert("Akses ditolak: hanya admin yang dapat mengubah data.");
+  else alert("Terjadi kesalahan: "+((e&&e.message)||e));
+}
+async function addBulkParticipants(){
+  if(!guard())return;
   const kategori=document.getElementById("kategoriBanyak").value.trim();
   const raw=document.getElementById("namaBanyak").value;
-
-  if(!kategori){
-    alert("Pilih Kategori / Kelas untuk daftar nama ini terlebih dahulu.");
-    return;
-  }
-
+  if(!kategori){alert("Pilih Kategori / Kelas untuk daftar nama ini terlebih dahulu.");return;}
   const lines=raw.split("\n").map(l=>l.trim()).filter(l=>l.length>0);
-  if(!lines.length){
-    alert("Tulis minimal satu nama, satu nama per baris.");
-    return;
-  }
-
-  let ditambah=0, tanpaDojo=0;
+  if(!lines.length){alert("Tulis minimal satu nama, satu nama per baris.");return;}
+  let tanpaDojo=0;const list=[];
   lines.forEach(line=>{
-    let nama=line, dojo=lookupDojo(line);
+    let nama=line,dojo=lookupDojo(line);
     if(line.includes("|")){
       const parts=line.split("|");
       nama=parts[0].trim();
       dojo=(parts[1]||"").trim()||lookupDojo(nama);
     }
     if(!nama)return;
-    if(!dojo){tanpaDojo++;}
-    participants.push({id:Date.now()+Math.random(),nama:nama,kategori:kategori,dojo:dojo});
-    ditambah++;
+    if(!dojo)tanpaDojo++;
+    list.push({nama:nama,kategori:kategori,dojo:dojo});
   });
-
-  renderList();
+  try{await FB.addParticipants(list);}catch(e){return dataError(e);}
   document.getElementById("namaBanyak").value="";
   document.getElementById("kategoriBanyak").selectedIndex=0;
-  document.getElementById("bracketArea").innerHTML=
-    '<div class="empty">'+ditambah+' peserta berhasil ditambahkan. Klik <b>Acak & Buat Ranji</b> untuk membuat ranji terbaru.</div>';
-
-  if(tanpaDojo>0){
-    alert(ditambah+" peserta ditambahkan, tapi "+tanpaDojo+" di antaranya belum ada nama dojo (nama tidak ditemukan di data Excel, atau tulis dojo per baris pakai format Nama | Dojo).");
-  }
+  if(tanpaDojo>0)alert(list.length+" peserta ditambahkan, tapi "+tanpaDojo+" di antaranya belum ada nama dojo (nama tidak ditemukan di data Excel, atau tulis dojo per baris pakai format Nama | Dojo).");
+  else toast(list.length+" peserta ditambahkan. Klik Acak & Buat Ranji untuk membuat ranji terbaru.");
 }
 
 /* ===== Data Excel (Nama & Dojo) ===== */
@@ -229,17 +274,17 @@ document.getElementById("fileExcel").addEventListener("change",function(){
  });
  this.value="";
 });
-function addExcelToCategory(){
+async function addExcelToCategory(){
+ if(!guard())return;
  const kategori=document.getElementById("kategoriExcel").value.trim();
  if(!excelRows.length){alert("Upload file Excel yang berisi Nama dan Dojo terlebih dahulu.");return;}
  if(!kategori){alert("Pilih Kategori / Kelas untuk peserta dari file Excel ini.");return;}
- const n=excelRows.length;
- excelRows.forEach(r=>participants.push({id:Date.now()+Math.random(),nama:r.nama,kategori:kategori,dojo:r.dojo}));
+ const list=excelRows.map(r=>({nama:r.nama,kategori:kategori,dojo:r.dojo}));
+ try{await FB.addParticipants(list);}catch(e){return dataError(e);}
  excelRows=[];
  const info=document.getElementById("excelInfo");info.className="";info.innerHTML="";
  document.getElementById("kategoriExcel").selectedIndex=0;
- renderList();
- document.getElementById("bracketArea").innerHTML='<div class="empty">'+n+' peserta dari Excel berhasil ditambahkan. Klik <b>Acak & Buat Ranji</b> untuk membuat ranji terbaru.</div>';
+ toast(list.length+" peserta dari Excel ditambahkan. Klik Acak & Buat Ranji untuk membuat ranji terbaru.");
 }
 function downloadTemplate(){
  if(typeof XLSX==="undefined"){alert("Library Excel belum termuat (perlu internet).");return;}
@@ -249,10 +294,16 @@ function downloadTemplate(){
  XLSX.writeFile(wb,"template_peserta.xlsx");
 }
 
-function removeParticipant(id){participants=participants.filter(p=>p.id!==id);save();}
-function clearAll(){
+async function removeParticipant(id){
+ if(!guard())return;
+ try{await FB.removeParticipant(id);}catch(e){dataError(e);}
+}
+async function clearAll(){
+ if(!guard())return;
  if(!participants.length)return;
- if(confirm("Hapus semua data peserta?")){participants=[];renderList();document.getElementById("bracketArea").innerHTML='<div class="empty">Masukkan peserta, kemudian klik <b>Acak & Buat Ranji</b>.</div>';}
+ if(confirm("Hapus semua data peserta dan ranji?")){
+  try{await FB.clearAll();toast("Semua data dihapus.");}catch(e){dataError(e);}
+ }
 }
 function renderList(){
  document.getElementById("total").textContent=participants.length;
@@ -278,7 +329,7 @@ function renderList(){
      out+='<div class="category-block"><div class="category-name">'+esc(category)+' <span class="category-count">('+arr.length+' peserta)</span></div><div class="participant-chips">';
      arr.forEach(p=>{
        nomor++;
-       out+='<div class="participant-card"><span class="participant-number">'+nomor+'</span><div class="participant-info"><b>'+esc(p.nama)+'</b><small>Dojo: '+esc(p.dojo||'-')+'</small></div><button class="danger no-print" style="margin-left:auto;padding:6px 8px;font-size:11px" onclick="removeParticipant('+p.id+')">Hapus</button></div>';
+       out+='<div class="participant-card"><span class="participant-number">'+nomor+'</span><div class="participant-info"><b>'+esc(p.nama)+'</b><small>Dojo: '+esc(p.dojo||'-')+'</small></div><button class="danger no-print admin-only" style="margin-left:auto;padding:6px 8px;font-size:11px" onclick="removeParticipant(\''+p.id+'\')">Hapus</button></div>';
      });
      out+='</div></div>';
    });
@@ -414,24 +465,50 @@ function renderBracket(firstSlots){
  html+='</div></div>';
  return html;
 }
-function generateAll(){
+async function generateAll(){
+ if(!guard())return;
  if(!participants.length){alert("Belum ada peserta.");return;}
- const area=document.getElementById("bracketArea");area.innerHTML="";
- let map=groupByCategory(),number=0;
- map.forEach((players,category)=>{
-   number++;
-   const result=createFirstRound(players);
-   const conflict=result.conflicts;
-   let html='<div class="category"><div class="cat-title"><span>'+esc(category)+'</span><small>'+players.length+' peserta</small></div>';
-   if(conflict===0){
-     html+='<div class="ok">✓ <b>Babak pertama aman:</b> tidak ada peserta dari dojo yang sama yang dipertemukan langsung.</div>';
-   }else{
-     html+='<div class="bad">⚠ <b>Perhatian:</b> masih ada '+conflict+' pasangan dojo yang sama. Hal ini hanya terjadi jika jumlah peserta dari satu dojo membuat pemisahan sempurna secara matematis tidak memungkinkan.</div>';
-   }
-   html+=renderBracket(result.slots);
-   html+='<div class="footer-note">Warna merah/biru menandai sisi peserta. BYE berarti lolos otomatis ke ronde berikutnya.</div></div>';
-   area.innerHTML+=html;
+ const cats=[];
+ groupByCategory().forEach((players,category)=>{
+   const r=createFirstRound(players);
+   cats.push({category:category,jumlah:players.length,conflicts:r.conflicts,
+     slots:r.slots.map(p=>p?{nama:p.nama,dojo:p.dojo||""}:null)});
  });
+ try{await FB.saveBrackets(cats);toast("Ranji berhasil dibuat dan disimpan.");}catch(e){dataError(e);}
+}
+function renderBrackets(data){
+ const area=document.getElementById("bracketArea");
+ if(!data||!data.categories||!data.categories.length){
+   area.innerHTML='<div class="empty">'+(isAdmin()
+     ?'Masukkan peserta, kemudian klik <b>Acak &amp; Buat Ranji</b>.'
+     :'Ranji belum dibuat oleh admin.')+'</div>';
+   return;
+ }
+ let html='';
+ data.categories.forEach(c=>{
+   html+='<div class="category"><div class="cat-title"><span>'+esc(c.category)+'</span><small>'+c.jumlah+' peserta</small></div>';
+   if(c.conflicts===0)html+='<div class="ok">✓ <b>Babak pertama aman:</b> tidak ada peserta dari dojo yang sama yang dipertemukan langsung.</div>';
+   else html+='<div class="bad">⚠ <b>Perhatian:</b> masih ada '+c.conflicts+' pasangan dojo yang sama. Hal ini hanya terjadi jika jumlah peserta dari satu dojo membuat pemisahan sempurna secara matematis tidak memungkinkan.</div>';
+   html+=renderBracket(c.slots);
+   html+='<div class="footer-note">Warna merah/biru menandai sisi peserta. BYE berarti lolos otomatis ke ronde berikutnya.</div></div>';
+ });
+ area.innerHTML=html;
+}
+/* ===== Dipanggil oleh Firebase (lihat script module di bawah) ===== */
+let lastBracketData=null;
+function setParticipants(list){
+ participants=list.sort((a,b)=>(a.urut||0)-(b.urut||0));
+ renderList();
+}
+function setBracketData(data){lastBracketData=data;renderBrackets(data);}
+function setSession(email,admin){
+ window.IS_ADMIN=!!admin;
+ document.body.classList.toggle("viewer",!admin);
+ document.getElementById("userEmail").textContent=email||"";
+ const b=document.getElementById("roleBadge");
+ b.textContent=admin?"Admin":"Pengguna (hanya lihat)";
+ b.className="badge "+(admin?"admin":"viewer");
+ renderBrackets(lastBracketData);
 }
 /* ===== Cetak ranji: Tata letak (Potret/Lanskap) dipilih di dialog cetak browser ===== */
 function fitBracketsForPrint(){
@@ -450,6 +527,126 @@ function printRanji(){
  window.print();
 }
 renderList();
+</script>
+
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,collection,doc,onSnapshot,setDoc,deleteDoc,getDocs,writeBatch,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ============ ISI DENGAN DATA FIREBASE ANDA ============
+   Firebase Console > Project settings > General > Your apps > SDK setup and configuration */
+const firebaseConfig = {
+  apiKey: "AIzaSyAatUKTmPwWgIkXQUI8seS9ASx55yAHfAc",
+  authDomain: "ranji-karate-18d20.firebaseapp.com",
+  projectId: "ranji-karate-18d20",
+  storageBucket: "ranji-karate-18d20.firebasestorage.app",
+  messagingSenderId: "223305756482",
+  appId: "1:223305756482:web:b97913cded89bdd09022db"
+};
+/* Email admin (harus sama persis dengan email di Firestore Rules) */
+const ADMIN_EMAIL="faizakbar300@gmail.com";
+/* ======================================================== */
+
+const $=id=>document.getElementById(id);
+const configured=!String(firebaseConfig.apiKey).startsWith("ISI_");
+let mode="login";
+
+function showMsg(text,ok){const m=$("authMsg");m.hidden=!text;m.textContent=text||"";m.className=ok?"ok":"bad";}
+function setMode(m){
+  mode=m;showMsg("");
+  const reg=m==="register";
+  $("confirmWrap").hidden=!reg;
+  $("authSubmit").textContent=reg?"Daftar":"Masuk";
+  $("switchText").textContent=reg?"Sudah punya akun?":"Belum punya akun?";
+  $("switchLink").textContent=reg?"Masuk":"Daftar";
+  $("authSubtitle").textContent=reg?"Buat akun untuk melihat ranji pertandingan":"Masuk untuk melihat ranji pertandingan";
+  $("authPass").autocomplete=reg?"new-password":"current-password";
+}
+$("switchLink").addEventListener("click",e=>{e.preventDefault();setMode(mode==="login"?"register":"login");});
+
+function errText(e){
+  switch(e&&e.code){
+    case "auth/invalid-credential":case "auth/wrong-password":case "auth/user-not-found":return "Email atau kata sandi salah.";
+    case "auth/email-already-in-use":return "Email sudah terdaftar. Silakan masuk.";
+    case "auth/weak-password":return "Kata sandi minimal 6 karakter.";
+    case "auth/invalid-email":return "Format email tidak valid.";
+    case "auth/too-many-requests":return "Terlalu banyak percobaan. Coba lagi beberapa saat lagi.";
+    case "auth/network-request-failed":return "Tidak ada koneksi internet.";
+    case "auth/operation-not-allowed":return "Login Email/Password belum diaktifkan di Firebase Console (Authentication > Sign-in method).";
+    default:return "Gagal: "+((e&&e.message)||e);
+  }
+}
+
+if(!configured){
+  document.body.classList.remove("checking");
+  showMsg("Konfigurasi Firebase belum diisi. Buka index.html, cari firebaseConfig, lalu isi dengan data proyek Firebase Anda.");
+  $("authSubmit").disabled=true;
+}else{
+  const app=initializeApp(firebaseConfig);
+  const auth=getAuth(app);
+  const db=getFirestore(app);
+  let unsubP=null,unsubR=null;
+
+  $("authForm").addEventListener("submit",async e=>{
+    e.preventDefault();showMsg("");
+    const email=$("authEmail").value.trim(),pass=$("authPass").value;
+    if(!email||!pass){showMsg("Isi email dan kata sandi.");return;}
+    if(mode==="register"&&pass!==$("authPass2").value){showMsg("Kata sandi dan ulangi kata sandi tidak sama.");return;}
+    $("authSubmit").disabled=true;
+    try{
+      if(mode==="register")await createUserWithEmailAndPassword(auth,email,pass);
+      else await signInWithEmailAndPassword(auth,email,pass);
+      $("authForm").reset();
+    }catch(err){showMsg(errText(err));}
+    finally{$("authSubmit").disabled=false;}
+  });
+
+  onAuthStateChanged(auth,user=>{
+    document.body.classList.remove("checking");
+    if(unsubP){unsubP();unsubP=null;}
+    if(unsubR){unsubR();unsubR=null;}
+    if(!user){
+      document.body.classList.add("loggedout");
+      setMode("login");
+      setSession("",false);setParticipants([]);setBracketData(null);
+      return;
+    }
+    const admin=(user.email||"").toLowerCase()===ADMIN_EMAIL.toLowerCase();
+    document.body.classList.remove("loggedout");
+    setSession(user.email,admin);
+    unsubP=onSnapshot(collection(db,"peserta"),
+      s=>setParticipants(s.docs.map(d=>({id:d.id,...d.data()}))),
+      err=>dataError(err));
+    unsubR=onSnapshot(doc(db,"ranji","hasil"),
+      s=>setBracketData(s.exists()?s.data():null),
+      err=>dataError(err));
+  });
+
+  async function chunked(refs,fn){
+    for(let i=0;i<refs.length;i+=400){
+      const b=writeBatch(db);refs.slice(i,i+400).forEach(r=>fn(b,r));await b.commit();
+    }
+  }
+  window.FB={
+    async addParticipants(list){
+      const base=Date.now();
+      const items=list.map((p,i)=>({ref:doc(collection(db,"peserta")),data:{nama:p.nama,dojo:p.dojo||"",kategori:p.kategori,urut:base+i}}));
+      await chunked(items,(b,it)=>b.set(it.ref,it.data));
+    },
+    async removeParticipant(id){await deleteDoc(doc(db,"peserta",id));},
+    async clearAll(){
+      const s=await getDocs(collection(db,"peserta"));
+      await chunked(s.docs.map(d=>d.ref),(b,r)=>b.delete(r));
+      await deleteDoc(doc(db,"ranji","hasil"));
+    },
+    async saveBrackets(categories){
+      await setDoc(doc(db,"ranji","hasil"),{categories:categories,updatedAt:serverTimestamp()});
+    },
+    logout(){return signOut(auth);}
+  };
+}
 </script>
 
 </body>
